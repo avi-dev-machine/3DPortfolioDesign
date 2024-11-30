@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --accent-color: #64ffda;
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* Cursor Effects */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            mix-blend-mode: difference;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(100, 255, 218, 0.2);
+            border-radius: 50%;
+            mix-blend-mode: color-dodge;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.3s ease;
+        }
+
+        .blob {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at center, 
+                rgba(100, 255, 218, 0.1), 
+                var(--bg-primary) 70%
+            );
+            animation: blob-animation 15s infinite linear;
+            mix-blend-mode: color-dodge;
+            z-index: -1;
+        }
+
+        @keyframes blob-animation {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .navbar-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .navbar-links a:hover {
+            color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .navbar-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding-top: 80px;
+            text-align: center;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .profile-image-container {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-color);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .profile-image-container:hover {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        .profile-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-text {
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        /* Projects Section */
+        .projects-section {
+            padding: 4rem 5%;
+            background-color: var(--bg-secondary);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background-color: var(--bg-primary);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            border: 1px solid var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg, 
+                transparent, 
+                rgba(100, 255, 218, 0.1), 
+                transparent
+            );
+            transition: all 0.6s ease;
+        }
+
+        .project-card:hover::before {
+            left: 100%;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .project-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .project-card:hover .project-title {
+            color: var(--text-primary);
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .project-links {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .project-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .project-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -3px;
+            left: 0;
+            background-color: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .project-link:hover {
+            transform: scale(1.1);
+        }
+
+        .project-link:hover::after {
+            width: 100%;
+        }
+        /* Skills Section */
+.skills-section {
+    padding: 4rem 5%;
+    background-color: var(--bg-secondary);
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+}
+
+.skills-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.skill-card {
+    background-color: var(--bg-primary);
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: 1px solid var(--bg-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.skill-card:hover {
+    transform: translateY(-10px) rotate(2deg);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.skill-title {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.skill-description {
+    color: var(--text-secondary);
+}
+
+/* Contact Section */
+.contact-section {
+    padding: 4rem 5%;
+    background-color: var(--bg-secondary);
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+}
+
+.contact-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-form label {
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.contact-form input, .contact-form textarea {
+    padding: 1rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-secondary);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.contact-form input:focus, .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.contact-form button {
+    padding: 1rem;
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.contact-form button:hover {
+    background-color: #55cc99;
+}
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    /* Profile Section */
+    .profile-section {
+        padding-top: 60px;
+    }
+
+    .profile-image-container {
+        width: 200px;
+        height: 200px;
+    }
+
+    .profile-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .profile-text p {
+        font-size: 1rem;
+    }
+
+    /* Projects Section */
+    .projects-grid {
+        grid-template-columns: 1fr; /* Stack projects vertically on smaller screens */
+    }
+
+    .project-card {
+        padding: 1.5rem;
+    }
+
+    /* Skills Section */
+    .skills-list {
+        grid-template-columns: 1fr; /* Stack skill cards vertically on smaller screens */
+    }
+
+    .skill-card {
+        padding: 1.5rem;
+    }
+
+    /* Contact Section */
+    .contact-form input, .contact-form textarea {
+        width: 100%;
+    }
+
+    .contact-form button {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    /* Profile Section */
+    .profile-section {
+        padding-top: 50px;
+    }
+
+    .profile-image-container {
+        width: 150px;
+        height: 150px;
+    }
+
+    .profile-text h1 {
+        font-size: 1.3rem;
+    }
+
+    .profile-text p {
+        font-size: 0.9rem;
+    }
+
+    /* Projects Section */
+    .projects-grid {
+        grid-template-columns: 1fr; /* Stack projects vertically */
+    }
+
+    /* Skills Section */
+    .skills-list {
+        grid-template-columns: 1fr; /* Stack skill cards vertically */
+    }
+
+    /* Contact Section */
+    .contact-form input, .contact-form textarea {
+        padding: 0.8rem;
+    }
+
+    .contact-form button {
+        padding: 0.8rem;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+    <!-- Cursor and Blob Effects -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    <div class="blob"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" data-section>
+        <a href="#" class="navbar-logo">Avijnan</a>
+        <div class="navbar-links">
+            <a href="#home">Home</a>
+            <a href="#skills">Skills</a>
+            <a href="#projects">Projects</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Profile Section -->
+    <section id="home" class="profile-section" data-section>
+        <div class="profile-image-container">
+            <img src="profile.png" alt="Profile Picture">
+        </div>
+        <div class="profile-text">
+            <h1 style="color: var(--accent-color); margin-top: 1rem;">Avijnan</h1>
+            <p style="color: var(--text-secondary);">Creative Developer & Design Enthusiast</p>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="projects-section" data-section>
+        <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 2rem;">My Projects</h2>
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3 class="project-title">Project One</h3>
+                <p class="project-description">
+                    A comprehensive web application that solves real-world problems 
+                    with efficient and scalable solutions.
+                </p>
+                <div class="project-links">
+                    <a href="#" class="project-link">GitHub</a>
+                    <a href="#" class="project-link">Live Demo</a>
+                </div>
+            </div>
+            <div class="project-card">
+                <h3 class="project-title">Project Two</h3>
+                <p class="project-description">
+                    Innovative platform showcasing advanced technologies and 
+                    creative problem-solving techniques.
+                </p>
+                <div class="project-links">
+                    <a href="#" class="project-link">GitHub</a>
+                    <a href="#" class="project-link">Live Demo</a>
+                </div>
+            </div>
+            <div class="project-card">
+                <h3 class="project-title">Project Three</h3>
+                <p class="project-description">
+                    Dynamic application demonstrating complex integrations 
+                    and modern web development practices.
+                </p>
+                <div class="project-links">
+                    <a href="#" class="project-link">GitHub</a>
+                    <a href="#" class="project-link">Live Demo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Skills Section -->
+<section id="skills" class="skills-section" data-section>
+    <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 2rem;">My Skills</h2>
+    <div class="skills-list">
+        <div class="skill-card">
+            <h3 class="skill-title">HTML</h3>
+            <p class="skill-description">Expert in creating semantic and accessible web pages.</p>
+        </div>
+        <div class="skill-card">
+            <h3 class="skill-title">CSS</h3>
+            <p class="skill-description">Skilled in designing modern, responsive, and aesthetic layouts.</p>
+        </div>
+        <div class="skill-card">
+            <h3 class="skill-title">JavaScript</h3>
+            <p class="skill-description">Proficient in building interactive and dynamic web applications.</p>
+        </div>
+        <div class="skill-card">
+            <h3 class="skill-title">React</h3>
+            <p class="skill-description">Experienced in building scalable front-end applications with React.</p>
+        </div>
+        <div class="skill-card">
+            <h3 class="skill-title">Node.js</h3>
+            <p class="skill-description">Experienced in building server-side applications with Node.js.</p>
+        </div>
+    </div>
+</section>
+<!-- Contact Section -->
+<section id="contact" class="contact-section" data-section>
+    <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 2rem;">Contact Me</h2>
+    <div class="contact-form">
+        <form action="your-form-endpoint" method="POST">
+            <label for="name" style="color: var(--text-primary);">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Your Name" required>
+            
+            <label for="email" style="color: var(--text-primary);">Your Email</label>
+            <input type="email" id="email" name="email" placeholder="Your Email" required>
+            
+            <label for="message" style="color: var(--text-primary);">Your Message</label>
+            <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+            
+            <button type="submit" style="background-color: var(--accent-color); color: #fff;">Send Message</button>
+        </form>
+    </div>
+</section>
+
+
+    <script>
+        // Cursor and 3D Scene Interaction
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.querySelector('.cursor');
+            const follower = document.querySelector('.cursor-follower');
+            
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+            
+            follower.style.left = `${e.clientX}px`;
+            follower.style.top = `${e.clientY}px`;
+
+            // 3D scene interaction for sections
+            const sections = document.querySelectorAll('[data-section]');
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            sections.forEach(section => {
+                const rotateX = (e.clientY - centerY) / centerY * -10;
+                const rotateY = (e.clientX - centerX) / centerX * 10;
+                
+                section.style.transform = `
+                    perspective(1000px)
+                    rotateX(${rotateX}deg) 
+                    rotateY(${rotateY}deg)
+                `;
+            });
+        });
+
+        // Profile Text Animation
+        window.addEventListener('load', () => {
+            const profileText = document.querySelector('.profile-text');
+            profileText.style.opacity = '1';
+            profileText.style.transform = 'translateY(0)';
+        });
+
+        // Hover Effects for Project Cards
+        const projectCards = document.querySelectorAll('.project-card');
+        projectCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-15px) rotate(2deg)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) rotate(0)';
+            });
+        });
+    </script>
+</body>
+</html>
